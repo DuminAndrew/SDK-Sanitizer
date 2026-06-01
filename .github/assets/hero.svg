@@ -1,0 +1,111 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 280" width="1200" height="280" role="img" aria-label="SDK-Sanitizer — Android tracker and GDPR/CCPA scanner">
+  <defs>
+    <radialGradient id="bg" cx="0.5" cy="0.42" r="0.85">
+      <stop offset="0" stop-color="#2a1a05"/>
+      <stop offset="0.5" stop-color="#120d08"/>
+      <stop offset="1" stop-color="#000000"/>
+    </radialGradient>
+    <linearGradient id="amber" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#ffb347"/>
+      <stop offset="0.5" stop-color="#ff8c00"/>
+      <stop offset="1" stop-color="#ff6b35"/>
+    </linearGradient>
+    <linearGradient id="amberText" x1="0" x2="1" y1="0" y2="0">
+      <stop offset="0" stop-color="#ffd27a">
+        <animate attributeName="stop-color" values="#ffd27a;#ff8c00;#ff6b35;#ffd27a" dur="8s" repeatCount="indefinite"/>
+      </stop>
+      <stop offset="0.5" stop-color="#ff9e1b">
+        <animate attributeName="stop-color" values="#ff9e1b;#ff6b35;#ffd27a;#ff9e1b" dur="8s" repeatCount="indefinite"/>
+      </stop>
+      <stop offset="1" stop-color="#ff6b35">
+        <animate attributeName="stop-color" values="#ff6b35;#ffd27a;#ff8c00;#ff6b35" dur="8s" repeatCount="indefinite"/>
+      </stop>
+    </linearGradient>
+    <radialGradient id="shieldGlow">
+      <stop offset="0" stop-color="#ff8c00" stop-opacity="0.9"/>
+      <stop offset="0.5" stop-color="#ff8c00" stop-opacity="0.3"/>
+      <stop offset="1" stop-color="#ff8c00" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="bigglow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="6" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <clipPath id="shieldClip">
+      <path d="M 0 -86 L 70 -56 L 70 18 Q 70 70 0 100 Q -70 70 -70 18 L -70 -56 Z"/>
+    </clipPath>
+    <style>
+      .title { font: 800 60px 'Segoe UI', 'Fira Code', sans-serif; }
+      .sub   { font: 500 19px 'Fira Code', monospace; fill: #e8d9c5; letter-spacing: 4px; }
+      .tag   { font: 600 13px 'Fira Code', monospace; letter-spacing: 6px; }
+      .scan  { font: 700 11px 'Fira Code', monospace; fill: #ffb347; opacity: 0.55; }
+    </style>
+  </defs>
+
+  <rect width="1200" height="280" fill="url(#bg)" rx="16"/>
+
+  <!-- grid -->
+  <g opacity="0.07" stroke="#ff8c00" stroke-width="0.5">
+    <path d="M0 40H1200M0 80H1200M0 120H1200M0 160H1200M0 200H1200M0 240H1200"/>
+    <path d="M120 0V280M240 0V280M360 0V280M480 0V280M600 0V280M720 0V280M840 0V280M960 0V280M1080 0V280"/>
+  </g>
+
+  <!-- scanning code columns -->
+  <g opacity="0.4">
+    <text x="60" y="-10" class="scan">
+      com<tspan x="60" dy="18">.</tspan><tspan x="60" dy="18">g</tspan><tspan x="60" dy="18">m</tspan><tspan x="60" dy="18">s</tspan><tspan x="60" dy="18">.</tspan><tspan x="60" dy="18">a</tspan><tspan x="60" dy="18">d</tspan>
+      <animate attributeName="y" from="-150" to="280" dur="6s" repeatCount="indefinite"/>
+    </text>
+    <text x="100" y="-10" class="scan">
+      01<tspan x="100" dy="18">1</tspan><tspan x="100" dy="18">0</tspan><tspan x="100" dy="18">SDK</tspan><tspan x="100" dy="18">1</tspan><tspan x="100" dy="18">0</tspan>
+      <animate attributeName="y" from="-120" to="280" dur="8s" begin="1s" repeatCount="indefinite"/>
+    </text>
+    <text x="1110" y="-10" class="scan">
+      GDPR<tspan x="1110" dy="18">·</tspan><tspan x="1110" dy="18">C</tspan><tspan x="1110" dy="18">C</tspan><tspan x="1110" dy="18">P</tspan><tspan x="1110" dy="18">A</tspan>
+      <animate attributeName="y" from="-130" to="280" dur="7s" begin="0.5s" repeatCount="indefinite"/>
+    </text>
+    <text x="1150" y="-10" class="scan">
+      .net<tspan x="1150" dy="18">/</tspan><tspan x="1150" dy="18">a</tspan><tspan x="1150" dy="18">d</tspan><tspan x="1150" dy="18">s</tspan><tspan x="1150" dy="18">?</tspan>
+      <animate attributeName="y" from="-150" to="280" dur="9s" begin="2s" repeatCount="indefinite"/>
+    </text>
+  </g>
+
+  <!-- shield emblem (left) -->
+  <g transform="translate(180, 140) scale(0.92)">
+    <circle r="120" fill="url(#shieldGlow)">
+      <animate attributeName="r" values="110;128;110" dur="4s" repeatCount="indefinite"/>
+    </circle>
+    <path d="M 0 -86 L 70 -56 L 70 18 Q 70 70 0 100 Q -70 70 -70 18 L -70 -56 Z"
+          fill="#1a1206" stroke="url(#amber)" stroke-width="4" filter="url(#bigglow)"/>
+    <!-- scan sweep inside shield -->
+    <g clip-path="url(#shieldClip)">
+      <rect x="-72" y="-90" width="144" height="14" fill="#ffd27a" opacity="0.45">
+        <animate attributeName="y" values="-90;100;-90" dur="3s" repeatCount="indefinite"/>
+      </rect>
+    </g>
+    <!-- checkmark -->
+    <path d="M -34 4 L -8 32 L 40 -30" fill="none" stroke="url(#amber)" stroke-width="9"
+          stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)"/>
+  </g>
+
+  <!-- title block (right) -->
+  <text x="350" y="118" class="title" fill="url(#amberText)" filter="url(#glow)">SDK-Sanitizer</text>
+  <text x="352" y="158" class="sub">Android tracker &amp; GDPR/CCPA scanner</text>
+  <line x1="352" y1="178" x2="1090" y2="178" stroke="#ff8c00" stroke-width="1" opacity="0.35"/>
+  <text x="352" y="210" class="tag" fill="#ffb347">
+    [ CODE + NETWORK SIGNATURES · SARIF / JSON / MD · CI GATE ]
+    <animate attributeName="opacity" values="0.45;1;0.45" dur="3s" repeatCount="indefinite"/>
+  </text>
+
+  <!-- bottom pulse dots -->
+  <g transform="translate(720, 246)">
+    <circle cx="-60" r="3" fill="#ff8c00"><animate attributeName="opacity" values="0.2;1;0.2" dur="1.5s" repeatCount="indefinite"/></circle>
+    <circle cx="-30" r="3" fill="#ff8c00"><animate attributeName="opacity" values="0.2;1;0.2" dur="1.5s" begin="0.2s" repeatCount="indefinite"/></circle>
+    <circle cx="0" r="3" fill="#ff8c00"><animate attributeName="opacity" values="0.2;1;0.2" dur="1.5s" begin="0.4s" repeatCount="indefinite"/></circle>
+    <circle cx="30" r="3" fill="#ff8c00"><animate attributeName="opacity" values="0.2;1;0.2" dur="1.5s" begin="0.6s" repeatCount="indefinite"/></circle>
+    <circle cx="60" r="3" fill="#ff8c00"><animate attributeName="opacity" values="0.2;1;0.2" dur="1.5s" begin="0.8s" repeatCount="indefinite"/></circle>
+  </g>
+</svg>
