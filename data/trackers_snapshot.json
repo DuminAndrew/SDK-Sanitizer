@@ -1,0 +1,22 @@
+{
+  "_meta": {
+    "description": "Снапшот сигнатур известных трекеров (well-known). Атрибуция: концепция code/network-сигнатур и категории — по проекту Exodus Privacy (БД под ODbL/DbCL). См. NOTICE. Обновление полной БД: sdk-sanitizer --update (Exodus API).",
+    "source": "https://reports.exodus-privacy.eu.org/api/trackers",
+    "license": "ODbL-1.0 (данные) — атрибуция Exodus Privacy",
+    "updated": "2026-06-01"
+  },
+  "trackers": [
+    { "name": "Google AdMob", "code_signature": "com.google.android.gms.ads", "network_signature": "googleads\\.g\\.doubleclick\\.net|googlesyndication\\.com", "categories": ["Advertisement"] },
+    { "name": "Google Firebase Analytics", "code_signature": "com.google.firebase.analytics", "network_signature": "app-measurement\\.com", "categories": ["Analytics"] },
+    { "name": "Google Analytics", "code_signature": "com.google.android.gms.analytics", "network_signature": "www\\.google-analytics\\.com", "categories": ["Analytics"] },
+    { "name": "Google Firebase Crashlytics", "code_signature": "com.google.firebase.crashlytics|com.crashlytics.android", "network_signature": "crashlytics\\.com", "categories": ["Crash reporting"] },
+    { "name": "Facebook (Login/Analytics/Ads)", "code_signature": "com.facebook", "network_signature": "graph\\.facebook\\.com|facebook\\.com", "categories": ["Analytics", "Advertisement", "Identification"] },
+    { "name": "Flurry", "code_signature": "com.flurry", "network_signature": "data\\.flurry\\.com", "categories": ["Analytics"] },
+    { "name": "Yandex AppMetrica", "code_signature": "com.yandex.metrica", "network_signature": "appmetrica\\.yandex|mc\\.yandex\\.ru", "categories": ["Analytics"] },
+    { "name": "AppsFlyer", "code_signature": "com.appsflyer", "network_signature": "appsflyer\\.com", "categories": ["Analytics"] },
+    { "name": "Amplitude", "code_signature": "com.amplitude", "network_signature": "amplitude\\.com", "categories": ["Analytics"] },
+    { "name": "Adjust", "code_signature": "com.adjust.sdk", "network_signature": "adjust\\.com", "categories": ["Analytics"] },
+    { "name": "OneSignal", "code_signature": "com.onesignal", "network_signature": "onesignal\\.com", "categories": ["Advertisement", "Notifications"] },
+    { "name": "Mixpanel", "code_signature": "com.mixpanel", "network_signature": "mixpanel\\.com", "categories": ["Analytics"] }
+  ]
+}

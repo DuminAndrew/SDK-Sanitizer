@@ -1,0 +1,46 @@
+name: 'SDK-Sanitizer'
+description: 'Scan Android app (APK/source) for hidden SDK trackers and privacy (GDPR/CCPA) risks. Outputs SARIF for code scanning.'
+author: 'DuminAndrew'
+branding:
+  icon: 'shield'
+  color: 'orange'
+inputs:
+  target:
+    description: 'Path to .apk file or source directory'
+    required: false
+    default: '.'
+  format:
+    description: 'Report format: md | json | sarif'
+    required: false
+    default: 'sarif'
+  output:
+    description: 'Output file path'
+    required: false
+    default: 'sdk-sanitizer.sarif'
+  fail-on:
+    description: 'Fail the job if max severity >= level: low | medium | high | critical (empty = never fail)'
+    required: false
+    default: ''
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    - name: Install androguard (for APK targets)
+      shell: bash
+      run: pip install "androguard>=4.1.0" || echo "androguard install skipped (source-only scan still works)"
+    - name: Run SDK-Sanitizer
+      shell: bash
+      run: |
+        FAILARG=""
+        if [ -n "${{ inputs.fail-on }}" ]; then FAILARG="--fail-on ${{ inputs.fail-on }}"; fi
+        PYTHONPATH="${{ github.action_path }}" python -m sdk_sanitizer.cli "${{ inputs.target }}" \
+          -f "${{ inputs.format }}" -o "${{ inputs.output }}" $FAILARG
+    - name: Upload SARIF to code scanning
+      if: ${{ inputs.format == 'sarif' }}
+      uses: github/codeql-action/upload-sarif@v3
+      with:
+        sarif_file: ${{ inputs.output }}
+      continue-on-error: true

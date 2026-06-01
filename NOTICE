@@ -1,0 +1,16 @@
+SDK-Sanitizer
+Copyright (c) 2026 DuminAndrew — MIT License (see LICENSE).
+
+This product includes tracker signature data derived from the
+Exodus Privacy project (https://exodus-privacy.eu.org/).
+
+- Tracker database (names, code/network signatures, categories) is published by
+  Exodus Privacy under the Open Database License (ODbL v1.0) with contents under
+  the Database Contents License (DbCL v1.0).
+- In accordance with ODbL, this attribution is provided and any redistributed or
+  produced derivative database is shared alike.
+- SDK-Sanitizer does NOT include or derive from Exodus source code (which is
+  licensed AGPL-3.0). Only the openly-licensed signature data is referenced.
+
+Exodus tracker API: https://reports.exodus-privacy.eu.org/api/trackers
+ODbL: https://opendatacommons.org/licenses/odbl/1-0/
