@@ -16,9 +16,32 @@ dependencies = []
 [project.optional-dependencies]
 apk = ["androguard>=4.1.0"]
 update = ["requests>=2.31.0"]
+dev = ["pytest>=7.0", "ruff>=0.4"]
+
+[project.urls]
+Homepage = "https://github.com/DuminAndrew/SDK-Sanitizer"
+Repository = "https://github.com/DuminAndrew/SDK-Sanitizer"
+Issues = "https://github.com/DuminAndrew/SDK-Sanitizer/issues"
+Changelog = "https://github.com/DuminAndrew/SDK-Sanitizer/blob/main/CHANGELOG.md"
 
 [project.scripts]
 sdk-sanitizer = "sdk_sanitizer.cli:main"
 
 [tool.setuptools]
 packages = ["sdk_sanitizer"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py39"
+extend-exclude = ["examples"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "C4"]
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["E402"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

@@ -3,11 +3,12 @@ import argparse
 import os
 import sys
 
-from .trackers import load_trackers, fetch_trackers, save_snapshot
-from .matcher import match_trackers
-from .compliance import assess, max_severity, SEV_ORDER
-from .reporters import to_json, to_markdown, to_sarif
 from . import extractor
+from .compliance import SEV_ORDER, assess, max_severity
+from .matcher import match_trackers
+from .permissions import assess_permissions, max_permission_severity
+from .reporters import to_json, to_markdown, to_sarif
+from .trackers import fetch_trackers, load_trackers, save_snapshot
 
 
 def main(argv=None):
@@ -38,10 +39,10 @@ def main(argv=None):
     trackers = load_trackers(args.db)
 
     if os.path.isdir(args.target):
-        tokens, domains, _perms = extractor.scan_source(args.target)
+        tokens, domains, perms = extractor.scan_source(args.target)
     elif args.target.lower().endswith(".apk") and os.path.isfile(args.target):
         try:
-            tokens, domains, _perms = extractor.scan_apk(args.target)
+            tokens, domains, perms = extractor.scan_apk(args.target)
         except RuntimeError as e:
             print(str(e), file=sys.stderr)
             return 1
@@ -50,19 +51,24 @@ def main(argv=None):
 
     found = match_trackers(tokens, domains, trackers)
     results = assess(found)
-    msev = max_severity(results)
+    perm_results = assess_permissions(perms)
 
-    report = {"md": to_markdown, "json": to_json, "sarif": to_sarif}[args.format](results, args.target, msev)
+    order = {"none": 0, **SEV_ORDER}
+    msev = max(max_severity(results), max_permission_severity(perm_results),
+               key=lambda s: order.get(s, 0))
+
+    report = {"md": to_markdown, "json": to_json, "sarif": to_sarif}[args.format](
+        results, args.target, msev, perm_results)
     if args.output:
         with open(args.output, "w", encoding="utf-8") as f:
             f.write(report)
-        print(f"Отчёт сохранён: {args.output} | трекеров: {len(results)} | макс. серьёзность: {msev}")
+        print(f"Отчёт сохранён: {args.output} | трекеров: {len(results)} | "
+              f"опасных разрешений: {len(perm_results)} | макс. серьёзность: {msev}")
     else:
         sys.stdout.reconfigure(encoding="utf-8") if hasattr(sys.stdout, "reconfigure") else None
         print(report)
 
     if args.fail_on:
-        order = {"none": 0, **SEV_ORDER}
         if order.get(msev, 0) >= order[args.fail_on]:
             return 2
     return 0

@@ -1,54 +1,77 @@
-"""Юнит-тесты ядра (stdlib unittest) — без APK и сети."""
-import os
-import sys
-import unittest
+"""Тесты матчера сигнатур и базы трекеров (pytest)."""
+import pytest
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-from sdk_sanitizer.trackers import load_trackers
 from sdk_sanitizer.matcher import match_trackers
-from sdk_sanitizer.compliance import assess, max_severity
-from sdk_sanitizer.reporters import to_json, to_markdown, to_sarif
+from sdk_sanitizer.trackers import load_trackers
 
 
-class TestCore(unittest.TestCase):
-    def setUp(self):
-        self.trackers = load_trackers()
-
-    def test_db_loads(self):
-        self.assertGreater(len(self.trackers), 5)
-
-    def test_code_match(self):
-        tokens = ["com.example.app.MainActivity", "com.google.android.gms.ads.AdView", "com.appsflyer.AppsFlyerLib"]
-        found = match_trackers(tokens, [], self.trackers)
-        names = {f["name"] for f in found}
-        self.assertIn("Google AdMob", names)
-        self.assertIn("AppsFlyer", names)
-        self.assertTrue(all("code" in f["matched_on"] for f in found))
-
-    def test_network_match(self):
-        found = match_trackers([], ["app-measurement.com", "graph.facebook.com"], self.trackers)
-        names = {f["name"] for f in found}
-        self.assertIn("Google Firebase Analytics", names)
-
-    def test_no_false_positive_on_clean(self):
-        found = match_trackers(["com.example.clean.Service", "org.acme.util.Helper"], ["example.com"], self.trackers)
-        self.assertEqual(found, [])
-
-    def test_assess_and_severity(self):
-        found = match_trackers(["com.google.android.gms.ads"], [], self.trackers)
-        results = assess(found)
-        self.assertEqual(results[0]["severity"], "high")  # Advertisement → high
-        self.assertTrue(results[0]["compliance_notes"])
-        self.assertEqual(max_severity(results), "high")
-
-    def test_reporters_do_not_crash(self):
-        found = match_trackers(["com.flurry.android"], [], self.trackers)
-        results = assess(found)
-        self.assertIn("Flurry", to_markdown(results, "x", "medium"))
-        self.assertIn("\"findings\"", to_json(results, "x", "medium"))
-        self.assertIn("2.1.0", to_sarif(results, "x", "medium"))
+@pytest.fixture(scope="module")
+def trackers():
+    return load_trackers()
 
 
-if __name__ == "__main__":
-    unittest.main(verbosity=2)
+def test_db_has_enough_trackers(trackers):
+    # Расширенная база well-known SDK.
+    assert len(trackers) >= 25
+
+
+def test_db_entries_well_formed(trackers):
+    for t in trackers:
+        assert t.get("name")
+        assert isinstance(t.get("categories"), list) and t["categories"]
+        # Должна быть хотя бы одна сигнатура.
+        assert t.get("code_signature") or t.get("network_signature")
+
+
+def test_code_match(trackers):
+    tokens = [
+        "com.example.app.MainActivity",
+        "com.google.android.gms.ads.AdView",
+        "com.appsflyer.AppsFlyerLib",
+    ]
+    found = match_trackers(tokens, [], trackers)
+    names = {f["name"] for f in found}
+    assert "Google AdMob" in names
+    assert "AppsFlyer" in names
+    assert all("code" in f["matched_on"] for f in found)
+
+
+def test_network_match(trackers):
+    found = match_trackers([], ["app-measurement.com", "graph.facebook.com"], trackers)
+    names = {f["name"] for f in found}
+    assert "Google Firebase Analytics" in names
+    assert "Facebook (Login/Analytics/Ads)" in names
+
+
+def test_new_trackers_detected(trackers):
+    tokens = [
+        "io.branch.referral.Branch",
+        "com.segment.analytics.Analytics",
+        "io.sentry.Sentry",
+        "com.unity3d.ads.UnityAds",
+        "com.applovin.sdk.AppLovinSdk",
+        "com.huawei.hms.analytics.HiAnalytics",
+    ]
+    found = match_trackers(tokens, [], trackers)
+    names = {f["name"] for f in found}
+    for expected in ("Branch", "Segment", "Sentry", "Unity Ads", "AppLovin", "Huawei HMS Analytics"):
+        assert expected in names
+
+
+def test_no_false_positive_on_clean(trackers):
+    found = match_trackers(
+        ["com.example.clean.Service", "org.acme.util.Helper"],
+        ["example.com"],
+        trackers,
+    )
+    assert found == []
+
+
+def test_results_sorted_by_name(trackers):
+    found = match_trackers(
+        ["com.flurry.android", "com.google.android.gms.ads", "com.amplitude.api"],
+        [],
+        trackers,
+    )
+    names = [f["name"] for f in found]
+    assert names == sorted(names, key=str.lower)

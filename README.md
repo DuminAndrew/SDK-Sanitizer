@@ -11,6 +11,7 @@
 
 <br/>
 
+[![CI](https://github.com/DuminAndrew/SDK-Sanitizer/actions/workflows/ci.yml/badge.svg)](https://github.com/DuminAndrew/SDK-Sanitizer/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/Python-3.9%2B-3776AB?style=flat-square&logo=python&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-22c55e?style=flat-square&logo=opensourceinitiative&logoColor=white)
 ![Android](https://img.shields.io/badge/Target-Android-3DDC84?style=flat-square&logo=android&logoColor=white)
@@ -41,6 +42,7 @@ no app upload, no cloud, fully local.
 - [⚡ Quick Start](#-quick-start)
 - [⚖️ Legal & Attribution](#️-legal--attribution)
 - [🗺 Roadmap](#-roadmap)
+- [🤝 Contributing](#-contributing)
 - [💚 Support / Crypto Donations](#-support--crypto-donations)
 - [📄 License](#-license)
 
@@ -89,6 +91,26 @@ Break the build when the **maximum severity** meets or exceeds a threshold (`low
 
 </td>
 </tr>
+<tr>
+<td width="33%" valign="top">
+
+### 🔐 Manifest permissions
+Parses `<uses-permission>` from **AndroidManifest.xml** (and APKs via `androguard`), flags **dangerous** permissions (location, contacts, SMS, camera, mic…), and attaches a **GDPR/CCPA** note + severity to each.
+
+</td>
+<td width="33%" valign="top">
+
+### 🧪 Tested & linted
+A `pytest` suite covers the matcher, compliance, permissions, reporters and extractor; `ruff` enforces style. CI runs the whole thing on a **Python 3.9–3.12** matrix.
+
+</td>
+<td width="33%" valign="top">
+
+### 📚 ~30 known SDKs bundled
+Ships signatures for ~30 well-known SDKs (AdMob, Firebase, Sentry, Segment, Branch, Unity Ads, AppLovin, ironSource, Braze, and more) — and the full Exodus catalogue is one `--update` away.
+
+</td>
+</tr>
 </table>
 
 > 🔄 Bonus: `--update` refreshes the local signature database straight from the **Exodus Privacy** API (optional `requests` extra).
@@ -102,6 +124,7 @@ The scanner builds two corpora from your app and matches them against the bundle
 1. **Extract** — from source files (`.java/.kt/.kts/.xml/.gradle/.smali/.json/.properties/.txt/.pro`) it harvests dotted **package/class tokens** and `http(s)://` **domains**; from an APK it pulls fully-qualified **class names** out of every DEX via `androguard`.
 2. **Match** — each tracker's `code_signature` is searched against the token corpus and its `network_signature` against the domain corpus (compiled as regex; invalid patterns fall back to literal). A hit records whether it matched on `code`, `network`, or both.
 3. **Assess** — every category on a matched tracker is resolved to a severity; the tracker takes the **highest** of its categories and accumulates the relevant GDPR/CCPA notes.
+4. **Permissions** — `<uses-permission>` entries are read from `AndroidManifest.xml` (source) or pulled via `androguard` (APK); dangerous ones are mapped to a severity and a GDPR/CCPA note. The report's overall **max severity** is the highest across trackers *and* permissions.
 
 ### Category → severity map
 
@@ -116,7 +139,11 @@ The scanner builds two corpora from your app and matches them against the bundle
 | Notifications   | `low`      | Lower-risk category; graded down unless paired with a higher one.                        |
 | *(unmapped)*    | `medium`   | Any unknown category defaults to `medium` so nothing slips through silently.             |
 
-The bundled snapshot ships with well-known SDKs out of the box — Google AdMob, Firebase Analytics / Crashlytics, Google Analytics, Facebook, Flurry, Yandex AppMetrica, AppsFlyer, Amplitude, Adjust, OneSignal and Mixpanel — and the full Exodus catalogue is one `--update` away.
+The bundled snapshot ships with ~30 well-known SDKs out of the box — Google AdMob, Firebase Analytics / Crashlytics, Crashlytics (Fabric), Google Analytics, Google Tag Manager, Facebook, Flurry, Yandex AppMetrica, AppsFlyer, Amplitude, Adjust, OneSignal, Mixpanel, Branch, Segment, Sentry, Bugsnag, Unity Ads, AppLovin, ironSource, Vungle, Chartboost, Tapjoy, Comscore, Braze, CleverTap, Localytics, Kochava, Singular, Tealium, HockeyApp, Instabug and Huawei HMS Analytics — and the full Exodus catalogue is one `--update` away.
+
+### Dangerous permission map
+
+Beyond SDKs, declared **runtime-sensitive permissions** are graded too — for example `ACCESS_BACKGROUND_LOCATION` and `READ_SMS`/`READ_CALL_LOG` escalate to `critical`; `ACCESS_FINE_LOCATION`, `CAMERA`, `RECORD_AUDIO`, `READ_CONTACTS` and `READ_PHONE_STATE` are `high`; storage/media and account access land at `medium`. Benign permissions (e.g. `INTERNET`) are ignored. See `sdk_sanitizer/permissions.py` for the full table.
 
 ---
 
@@ -141,9 +168,10 @@ A pure, testable core (stdlib only); `androguard` and `requests` are lazy, optio
                        │ matched trackers
                        ▼
                 ┌──────────────┐
-                │  compliance  │  compliance.py — category → GDPR/CCPA + severity
+                │  compliance  │  compliance.py  — category → GDPR/CCPA + severity
+                │ +permissions │  permissions.py — dangerous perms → GDPR/CCPA + severity
                 └──────┬───────┘
-                       │ assessed findings
+                       │ assessed findings (trackers + permissions)
                        ▼
                 ┌──────────────┐
                 │  reporters   │  reporters.py — SARIF / JSON / Markdown
@@ -158,14 +186,17 @@ A pure, testable core (stdlib only); `androguard` and `requests` are lazy, optio
 ```
 sdk_sanitizer/
   trackers.py    # load snapshot DB / fetch from Exodus API / save snapshot
-  extractor.py   # source scan (stdlib) | APK scan (androguard, optional)
+  extractor.py   # source scan (stdlib, + manifest perms) | APK scan (androguard, optional)
   matcher.py     # regex match classes/domains vs signatures
-  compliance.py  # category → GDPR/CCPA notes + severity
-  reporters.py   # SARIF / JSON / Markdown
+  compliance.py  # tracker category → GDPR/CCPA notes + severity
+  permissions.py # dangerous manifest permissions → GDPR/CCPA notes + severity
+  reporters.py   # SARIF / JSON / Markdown (trackers + permissions)
   cli.py         # argparse, CI exit codes
 data/trackers_snapshot.json   # bundled known-tracker signatures (Exodus-derived, ODbL)
 action.yml                    # GitHub Action (composite)
-tests/                        # unit tests (no APK / no network)
+examples/                     # fake Android source (manifest + .java) for demos
+tests/                        # pytest suite (no APK / no network)
+.github/workflows/ci.yml      # CI: ruff + pytest on Python 3.9–3.12 matrix
 ```
 
 ---
@@ -228,11 +259,30 @@ When `format: sarif`, the Action uploads results to **GitHub code scanning** aut
 
 ## 🗺 Roadmap
 
+- [x] **Manifest permission analysis** — flag dangerous declared permissions with GDPR/CCPA notes and severity.
+- [ ] **Permission ↔ tracker correlation** — link a declared permission to the SDK that most likely requires it.
 - [ ] **Kotlin / dexlib2 Gradle plugin** — run the scan as a Gradle task during the build.
-- [ ] **Manifest permission analysis** — correlate declared permissions with detected trackers.
 - [ ] **R8 / ProGuard-aware matching** — resolve re-classed/obfuscated package names to reduce misses.
 - [ ] **Domain extraction from APK resources** — recover network signatures from compiled APKs, not just source.
 - [ ] **Baseline / suppression file** — accept known findings to keep CI green on reviewed trackers.
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome — new tracker signatures, permission mappings, bug
+fixes, and docs. Please read [`CONTRIBUTING.md`](CONTRIBUTING.md) and the
+[`Code of Conduct`](CODE_OF_CONDUCT.md) first. Before opening a PR, run the same
+checks CI does:
+
+```bash
+pip install -e ".[dev]"
+ruff check .
+pytest -q
+python -m sdk_sanitizer.cli examples -f md
+```
+
+Security issues? See [`SECURITY.md`](SECURITY.md) — please report privately.
 
 ---
 

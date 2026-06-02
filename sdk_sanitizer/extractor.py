@@ -7,13 +7,19 @@ from pathlib import Path
 SRC_EXT = {".java", ".kt", ".kts", ".xml", ".gradle", ".smali", ".json", ".properties", ".txt", ".pro"}
 PKG_RE = re.compile(r"[a-zA-Z][\w]+(?:\.[a-zA-Z][\w]+){2,}")
 DOMAIN_RE = re.compile(r"https?://([a-zA-Z0-9.\-]+\.[a-zA-Z]{2,})")
+PERM_RE = re.compile(
+    r"<uses-permission[^>]*android:name\s*=\s*[\"']([^\"']+)[\"']", re.IGNORECASE
+)
 SKIP_DIRS = (os.sep + "node_modules", os.sep + ".git", os.sep + "build", os.sep + ".gradle", os.sep + ".idea")
 
 
 def scan_source(root):
-    """Возвращает (tokens, domains, permissions[]) — для папки исходников."""
+    """Возвращает (tokens, domains, permissions[]) — для папки исходников.
+
+    permissions собираются из всех AndroidManifest.xml через <uses-permission>.
+    """
     root = Path(root)
-    tokens, domains = set(), set()
+    tokens, domains, perms = set(), set(), set()
     for dp, _dns, fns in os.walk(root):
         if any(s in dp for s in SKIP_DIRS):
             continue
@@ -26,7 +32,9 @@ def scan_source(root):
                 continue
             tokens.update(PKG_RE.findall(txt))
             domains.update(DOMAIN_RE.findall(txt))
-    return tokens, domains, []
+            if fn.lower() == "androidmanifest.xml":
+                perms.update(PERM_RE.findall(txt))
+    return tokens, domains, sorted(perms)
 
 
 def scan_apk(path):
@@ -34,7 +42,7 @@ def scan_apk(path):
     try:
         from androguard.misc import AnalyzeAPK
     except ImportError:
-        raise RuntimeError("Для разбора APK установите androguard: pip install androguard")
+        raise RuntimeError("Для разбора APK установите androguard: pip install androguard") from None
     a, dexes, _dx = AnalyzeAPK(path)
     tokens = set()
     if not isinstance(dexes, (list, tuple)):
@@ -47,7 +55,7 @@ def scan_apk(path):
             tokens.add(name.replace("/", "."))
     perms = []
     try:
-        perms = list(a.get_permissions())
+        perms = sorted(set(a.get_permissions()))
     except Exception:
         pass
     return tokens, set(), perms
